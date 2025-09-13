@@ -1,0 +1,50 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  brand        String?
+  model        String?
+  shortDesc    String?
+  pricePerWeek Int
+  imageUrl     String?
+  createdAt    DateTime @default(now())
+  variants     ProductVariant[]
+   orders       Order[]
+}
+
+model ProductVariant {
+  id        String  @id @default(cuid())
+  productId String
+  color     String?
+  capacity  String?
+  inStock   Boolean @default(true)
+  Product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  status    String   @default("pending") // pending|active|cancelled|completed
+  stripePI  String?  // later
+  stripeSub String?  // later
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
